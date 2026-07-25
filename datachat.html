@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Connect Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen w-full flex items-center justify-center p-4 sm:p-8 font-sans">
+
+    <!-- App Container -->
+    <div class="bg-white w-full max-w-2xl h-full max-h-[800px] rounded-2xl shadow-xl flex flex-col overflow-hidden relative border border-slate-200">
+        
+        <!-- Header -->
+        <header class="bg-indigo-600 text-white p-4 sm:p-5 flex justify-between items-center shadow-md z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <h1 class="text-xl font-bold tracking-wide">Live Connect</h1>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span id="user-display" class="text-sm font-medium bg-indigo-500 px-3 py-1 rounded-full hidden"></span>
+                <!-- NEW: Share Button -->
+                <button id="share-btn" class="hidden bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors" title="Invite a friend">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- 1. Login / Username Screen -->
+        <div id="login-screen" class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Welcome to the Chat</h2>
+            <p class="text-slate-500 mb-8">Enter a display name to join the room.</p>
+            
+            <div class="w-full max-w-xs space-y-4">
+                <input type="text" id="username-input" placeholder="Your name..." 
+                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                <button id="join-btn" 
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md active:scale-[0.98]">
+                    Join Chat Room
+                </button>
+            </div>
+            
+            <!-- Warning block reminding you to add Firebase credentials -->
+            <div id="config-warning" class="mt-8 p-4 bg-amber-50 text-amber-800 text-sm rounded-lg border border-amber-200 max-w-sm text-left">
+                <strong>Developer Note:</strong> You must replace the <code>firebaseConfig</code> object in the HTML source code with your actual Firebase project credentials for this to work online.
+            </div>
+        </div>
+
+        <!-- 2. Chat Screen (Hidden initially) -->
+        <div id="chat-screen" class="hidden flex-1 flex flex-col bg-slate-50 relative">
+            <!-- Messages Area -->
+            <div id="chat-box" class="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4">
+                <!-- Messages will be injected here by JavaScript -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="bg-white p-3 sm:p-4 border-t border-slate-200">
+                <form id="message-form" class="flex gap-2">
+                    <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off"
+                        class="flex-1 px-4 py-3 bg-slate-100 border-transparent focus:bg-white border focus:border-indigo-500 rounded-full focus:outline-none transition-colors">
+                    <button type="submit" 
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full h-12 w-12 flex items-center justify-center flex-shrink-0 transition-colors shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Realtime Database Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // =====================================================================
+        // ⚠️ ATTENTION! REPLACE THIS OBJECT WITH YOUR FIREBASE PROJECT CONFIG ⚠️
+        // =====================================================================
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        // =====================================================================
+
+        let db, chatRef;
+        let currentUsername = "";
+
+        // UI Elements
+        const loginScreen = document.getElementById('login-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        const usernameInput = document.getElementById('username-input');
+        const joinBtn = document.getElementById('join-btn');
+        const userDisplay = document.getElementById('user-display');
+        const shareBtn = document.getElementById('share-btn');
+        const chatBox = document.getElementById('chat-box');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const configWarning = document.getElementById('config-warning');
+
+        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+            configWarning.style.display = 'none';
+        }
+
+        // --- NEW: Share Button Logic ---
+        shareBtn.addEventListener('click', async () => {
+            const shareData = {
+                title: 'Join my Live Chat!',
+                text: 'Come chat with me on my new app!',
+                url: window.location.href // This grabs your GitHub link automatically
+            };
+
+            try {
+                // This opens the native Android/iOS share menu
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    // Fallback if browser doesn't support native sharing
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert("Link copied to clipboard!");
+                }
+            } catch (err) {
+                console.log('Error sharing:', err);
+            }
+        });
+
+        // --- Login Logic ---
+        function joinChat() {
+            const name = usernameInput.value.trim();
+            if (name.length > 0) {
+                currentUsername = name;
+                
+                loginScreen.classList.add('hidden');
+                chatScreen.classList.remove('hidden');
+                chatScreen.classList.add('flex');
+                
+                userDisplay.textContent = currentUsername;
+                userDisplay.classList.remove('hidden');
+                shareBtn.classList.remove('hidden'); // Show share button after login
+
+                initFirebase();
+            } else {
+                usernameInput.classList.add('border-red-500');
+                setTimeout(() => usernameInput.classList.remove('border-red-500'), 500);
+            }
+        }
+
+        joinBtn.addEventListener('click', joinChat);
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') joinChat();
+        });
+
+        // --- Firebase & Chat Logic ---
+        function initFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getDatabase(app);
+                chatRef = ref(db, 'messages');
+
+                onChildAdded(chatRef, (snapshot) => {
+                    const messageData = snapshot.val();
+                    displayMessage(messageData.name, messageData.text, messageData.timestamp);
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                displaySystemMessage("Error connecting to database. Did you update the firebaseConfig in the code?");
+            }
+        }
+
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (text && chatRef) {
+                push(chatRef, {
+                    name: currentUsername,
+                    text: text,
+                    timestamp: Date.now() 
+                });
+                messageInput.value = '';
+                messageInput.focus();
+            }
+        });
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function displayMessage(name, text, timestamp) {
+            const isMe = name === currentUsername;
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex flex-col max-w-[75%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`;
+            
+            const nameSpan = isMe ? '' : `<span class="text-xs text-slate-500 ml-1 mb-1 font-medium">${name}</span>`;
+            
+            const bubbleColors = isMe 
+                ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-sm' 
+                : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-sm shadow-sm';
+
+            const timeString = timestamp ? formatTime(timestamp) : '';
+            const timeColor = isMe ? 'text-indigo-200' : 'text-slate-400';
+
+            msgDiv.innerHTML = `
+                ${nameSpan}
+                <div class="${bubbleColors} px-4 py-2.5 shadow-sm relative group">
+                    <p class="text-[15px] leading-relaxed break-words">${escapeHTML(text)}</p>
+                    <span class="text-[10px] ${timeColor} block mt-1 text-right">${timeString}</span>
+                </div>
+            `;
+            
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function displaySystemMessage(text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'self-center bg-red-100 text-red-700 text-xs py-1 px-3 rounded-full my-2 text-center max-w-[90%]';
+            msgDiv.textContent = text;
+            chatBox.appendChild(msgDiv);
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        }
+    </script>
+</body>
+</html>
+
+
